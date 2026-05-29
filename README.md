@@ -1,17 +1,33 @@
-# Atividade 05 - Evolução Arquitetural da Aplicação (mobile_arquitetura_02)
+1. Respostas do Questionário
+Qual era a estrutura do seu projeto antes da inclusão das novas telas?
+O projeto possuía apenas uma tela principal (ProductPage) que era exibida assim que o aplicativo iniciava. Ela estava estruturada em camadas (Models, Views, ViewModels, Repositories e DataSources) e fazia a listagem dos itens com estados de loading, success e error.
 
-Este projeto implementa uma arquitetura em camadas (UI, ViewModel, Repository, DataSources) em Flutter, incluindo tratamento de estados (carregando, sucesso, erro) e um sistema de cache local utilizando `shared_preferences`.
+Como ficou o fluxo da aplicação após a implementação da navegação?
+O fluxo agora é linear e sequencial: A aplicação inicia na HomePage (Tela Inicial), onde um botão direciona via navegação para a ProductPage (Tela de Produtos). Ao clicar em um item específico da lista, o usuário é direcionado para a ProductDetailsPage (Tela de Detalhes).
 
-## Questionário de Reflexão (Atividade 2)
+Qual é o papel do Navigator.push() no seu projeto?
+O Navigator.push() é utilizado para adicionar (empilhar) uma nova tela sobre a atual. Ele foi usado em dois momentos: para navegar da Home para a lista de produtos, e da lista para a tela de detalhes, aproveitando para transportar o objeto do produto selecionado.
 
-**1. Em qual camada foi implementado o mecanismo de cache? Explique por que essa decisão é adequada dentro da arquitetura proposta.**
-O mecanismo de cache foi implementado na **Camada de Dados**, especificamente em um `LocalDataSource`, sendo orquestrado pelo `Repository`. Essa decisão é adequada porque a responsabilidade de decidir de onde os dados vêm (se da API ou do cache) deve ser exclusiva do Repository. Isso mantém o ViewModel e a UI completamente agnósticos sobre a origem da informação, respeitando o Princípio da Responsabilidade Única (SRP).
+Qual é o papel do Navigator.pop() no seu projeto?
+O Navigator.pop() serve para remover a tela atual do topo da pilha de navegação, retornando à tela anterior. Ele é acionado automaticamente quando o usuário clica na seta de voltar padrão da AppBar (tanto na tela de lista quanto na tela de detalhes).
 
-**2. Por que o ViewModel não deve realizar chamadas HTTP diretamente?**
-Porque a responsabilidade do ViewModel é apenas gerenciar o estado da interface da aplicação (UI) e repassar ações do usuário. Se ele fizesse chamadas HTTP, haveria um forte acoplamento entre a lógica de apresentação e a infraestrutura de rede, tornando o código difícil de testar, manter e evoluir.
+Como os dados do produto selecionado foram enviados para a tela de detalhes?
+Os dados foram enviados através do construtor da classe ProductDetailsPage. No evento onTap da lista, a instância do objeto Product clicado é passada como argumento na chamada da rota.
 
-**3. O que poderia acontecer se a interface acessasse diretamente o DataSource?**
-A interface ficaria extremamente acoplada aos detalhes de implementação da busca de dados (como URLs, bibliotecas HTTP, ou queries de banco). Qualquer mudança na forma como os dados são obtidos ou armazenados exigiria a reescrita de partes da interface (UI). Além disso, a UI ficaria poluída com lógicas complexas, dificultando a leitura e a criação de testes unitários.
+Por que a tela de detalhes depende das informações da tela anterior?
+Porque, neste fluxo, a tela de detalhes não realiza uma nova chamada de rede (HTTP) para buscar as informações de um ID específico. Ela reaproveita os dados (título, preço, descrição e imagem) que já foram baixados pela tela de listagem, economizando dados e garantindo uma transição imediata.
 
-**4. Como essa arquitetura facilitaria a substituição da API por um banco de dados local?**
-Como a UI e o ViewModel conversam apenas com o `Repository` (que funciona como um contrato/fachada), substituir a API por um banco de dados local exigiria alterações **apenas** na camada de Dados (criando um novo DataSource ou alterando o Repository). Nenhuma linha de código da Interface (UI) ou do ViewModel precisaria ser alterada, garantindo uma manutenção muito mais segura e modular.
+Quais foram as principais mudanças feitas no projeto original?
+
+Atualização do modelo Product para capturar os campos description e image da Fake API.
+
+Criação da HomePage como ponto de entrada.
+
+Criação da ProductDetailsPage para exibir o produto de forma ampla.
+
+Adição do método onTap no ListTile da ProductPage contendo o Navigator.push.
+
+Modificação no main.dart para iniciar a rota pela Home, passando o ViewModel adiante.
+
+Quais dificuldades você encontrou durante a adaptação do projeto para múltiplas telas?
+A principal dificuldade envolveu o gerenciamento das dependências. Como o ProductViewModel é instanciado no main.dart, foi preciso pensar na melhor forma de repassá-lo para a tela de produtos (já que agora a tela inicial é a Home). Além disso, garantir que o sistema de cache (SharedPreferences) não quebrasse ao adicionar as novas propriedades (imagem e descrição) ao objeto exigiu atenção.
