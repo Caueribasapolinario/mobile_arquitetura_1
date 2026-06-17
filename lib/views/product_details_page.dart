@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../viewmodels/favorites_viewmodel.dart';
 
 class ProductDetailsPage extends StatelessWidget {
   final Product product;
@@ -8,10 +10,19 @@ class ProductDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final favViewModel = context.watch<FavoritesViewModel>();
+    final isFav = favViewModel.isFavorite(product.id);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(product.title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : null),
+            onPressed: () => context.read<FavoritesViewModel>().toggleFavorite(product.id),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -21,19 +21,17 @@ class Product {
       title: json['title'],
       price: (json['price'] as num).toDouble(),
       description: json['description'] ?? 'Sem descrição',
-      image: json['image'] ?? '',
+      image: json['thumbnail'] ?? '', // Alterado para mapear corretamente o DummyJSON
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'price': price,
-      'description': description,
-      'image': image,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'price': price,
+    'description': description,
+    'thumbnail': image,
+  };
 
   static String encodeList(List<Product> products) => json.encode(
         products.map<Map<String, dynamic>>((p) => p.toJson()).toList(),

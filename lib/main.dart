@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'data/datasources/local_data_source.dart';
 import 'data/datasources/remote_data_source.dart';
 import 'data/repositories/product_repository.dart';
 import 'viewmodels/product_viewmodel.dart';
+import 'viewmodels/auth_viewmodel.dart';
+import 'viewmodels/favorites_viewmodel.dart';
 import 'views/home_page.dart';
+import 'views/login_page.dart';
 
-void main() {
-  final remoteDataSource = RemoteDataSource();
-  final localDataSource = LocalDataSource();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   
-  final repository = ProductRepository(
-    remoteDataSource: remoteDataSource,
-    localDataSource: localDataSource,
+  final authViewModel = AuthViewModel();
+  await authViewModel.checkSession();
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: authViewModel),
+        ChangeNotifierProvider(create: (_) => ProductViewModel(
+          ProductRepository(remoteDataSource: RemoteDataSource(), localDataSource: LocalDataSource())
+        )),
+        ChangeNotifierProvider(create: (_) => FavoritesViewModel()),
+      ],
+      child: const MyApp(),
+    ),
   );
-  
-  final viewModel = ProductViewModel(repository);
-
-  runApp(MyApp(viewModel: viewModel));
 }
 
 class MyApp extends StatelessWidget {
-  final ProductViewModel viewModel;
-
-  const MyApp({super.key, required this.viewModel});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: HomePage(viewModel: viewModel), 
+      home: context.watch<AuthViewModel>().currentUser == null 
+          ? const LoginPage() 
+          : const HomePage(), 
     );
   }
 }

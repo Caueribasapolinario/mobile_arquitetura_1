@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
-import '../viewmodels/product_viewmodel.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/auth_viewmodel.dart';
 import 'product_page.dart';
+import 'login_page.dart';
 
 class HomePage extends StatelessWidget {
-  final ProductViewModel viewModel;
-
-  const HomePage({super.key, required this.viewModel});
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = context.watch<AuthViewModel>();
+    final user = authViewModel.currentUser;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Loja Fake API'),
+        title: const Text('DummyJSON Store'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await context.read<AuthViewModel>().logout();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+            },
+          )
+        ],
       ),
       body: Center(
         child: Column(
@@ -20,25 +32,16 @@ class HomePage extends StatelessWidget {
           children: [
             const Icon(Icons.shopping_bag_outlined, size: 100, color: Colors.deepPurple),
             const SizedBox(height: 20),
-            const Text(
-              'Bem-vindo à nossa loja!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              'Bem-vindo, ${user?.firstName ?? user?.username ?? "Usuário"}!',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
               icon: const Icon(Icons.list),
               label: const Text('Ver Produtos'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                textStyle: const TextStyle(fontSize: 18),
-              ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductPage(viewModel: viewModel),
-                  ),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductPage()));
               },
             ),
           ],
